@@ -18,6 +18,11 @@ diarios = list(noticias.diario.unique())
 secciones = list(noticias.seccion.unique())
 columna_para_nube = ['titulo', 'descripcion']
 
+st.set_page_config(
+        page_title="Observatorio de noticias",        
+        initial_sidebar_state="expanded"
+    )
+
 
 with st.sidebar:
 
@@ -42,20 +47,59 @@ with st.sidebar:
 
 if palabra_buscada == "Ninguna" or palabra_buscada == "":
     st.title("Observatorio de Noticias")
+    st.write("""            
+
+            Hola! Bienvenido a la aplicación de análisis de sentimientos en las noticias. Esta aplicación extrae las noticias de algunos de los diarios mas
+            importantes del país ( a traves del RSS) y realiza un analisis de sentimientos sobre los titulos de cada una.
+            La app permite filtrar por palabra clave y generar una nube de palabras con los resultados 
+
+            De acuerdo al sentimiento analizado sobre cada noticia encontraremos 3 grupos: 
+            
+            **Sentimiento Positivo:** "YPF aumentó la distribución de gasoil y aseguró que el campo tiene garantizado el abastecimiento" 
+               *Probabilidades: NEGATIVA=0.008 ---  NEUTRA 0.43  ---    POSITIVA 0.56 (GANADOR --> POSITIVA)* 
+               
+            
+            **Sentimiento Neutro:** "El aeroclub de Comodoro Rivadavia celebró su 87° aniversario"
+            *Probabilidades: NEGATIVA=0.02 ---  NEUTRA 0.67  ---    POSITIVA 0.30 (GANADOR --> NEUTRA)* 
+            
+            **Sentimiento Negativo:** "Crecen las expectativas de inflación del mercado"
+            *Probabilidades: NEGATIVA=0.60 ---  NEUTRA 0.37  ---    POSITIVA 0.15 (GANADOR --> NEGATIVA)* 
+            
+            """)
+
+    
+
     pass
 else:
-    st.title(palabra_buscada)
+    #st.title("Observatorio de Noticias")
+    st.header(f"Resultados para : {palabra_buscada}")
+    
     noticias = noticias[noticias['titulo'].str.contains(palabra_buscada)]
 
 st.session_state['dataframe_filtrado'] = noticias[(noticias.diario.isin(
     diarios_select)) & (noticias.seccion.isin(secciones_select))]
+
+st.subheader("Muestra aleatoria de noticias")
 st.dataframe(st.session_state['dataframe_filtrado'].sample(frac=1))
 st.session_state['dataframe_agrupado'] = st.session_state['dataframe_filtrado'].groupby(
     'diario')[['pond_negativos', 'pond_neutro', 'pond_positivo']].mean().reset_index()
 
 fig = px.bar(st.session_state['dataframe_agrupado'], x="diario", y=['pond_neutro', "pond_negativos", 'pond_positivo'], text_auto=True,
-             title="Analisis de sentimientos")
-fig.update_layout(legend_title_text='Pond de los sentimientos')
+             title=f"Analisis de sentimientos para las noticias seleccionadas según el diario"
+             )
+
+newnames = {'pond_neutro':'NEUTRAL', 'pond_negativos': 'NEGATIVA','pond_positivo': 'POSITIVA'}
+fig.for_each_trace(lambda t: t.update(name = newnames[t.name],
+                                      legendgroup = newnames[t.name],
+                                      hovertemplate = t.hovertemplate.replace(t.name, newnames[t.name])
+                                     )
+                  )
+fig.update_layout(
+    xaxis_title="Diarios",
+    yaxis_title="Probabilidades (de 0 a 1)",
+    
+)                  
+fig.update_layout(legend_title_text='Probabilidades')
 
 st.plotly_chart(fig)
 

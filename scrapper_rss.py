@@ -79,6 +79,7 @@ class Scrapper:
         for diarios in lista_diarios:
             dataframes.append(pd.read_csv("diarios/"+diarios))
         apilados = pd.concat(dataframes, axis=0)
+        apilados=apilados.drop_duplicates(subset=['titulo'])
         apilados.to_csv(f"diarios/diarios_historicos.csv", index=False)
 
     def agrega_fecha_hoy(self):
