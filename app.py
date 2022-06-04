@@ -41,7 +41,7 @@ with st.sidebar:
 
 
 if palabra_buscada == "Ninguna" or palabra_buscada == "":
-    st.title("Noticias")
+    st.title("Observatorio de Noticias")
     pass
 else:
     st.title(palabra_buscada)
