@@ -25,6 +25,7 @@ st.set_page_config(
 
 
 with st.sidebar:
+    st.write("Creado por [sebasur90](https://www.linkedin.com/in/sebastian-rodriguez-9b417830/)")
 
     diarios_select = st.multiselect('Selecciona los  diarios',
                                     diarios, default=diarios)
